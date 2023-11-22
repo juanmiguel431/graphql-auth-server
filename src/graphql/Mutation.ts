@@ -2,7 +2,14 @@ import { GraphQLID, GraphQLObjectType, GraphQLString, GraphQLNonNull } from 'gra
 
 const Mutation = new GraphQLObjectType({
   name: 'Mutation',
-  fields: {}
+  fields: {
+    hello: {
+      type: GraphQLString,
+      resolve: (source, args, context, info) => {
+        return 'JMPC Mutation';
+      }
+    }
+  }
 });
 
 export default Mutation;
