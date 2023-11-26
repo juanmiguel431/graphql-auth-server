@@ -1,6 +1,5 @@
 import passport from 'passport';
 import { Strategy } from 'passport-local';
-
 import UserModel from '../mongoose/models/UserModel';
 
 // SerializeUser is used to provide some identifying token that can be saved
@@ -32,7 +31,7 @@ passport.use(new Strategy({ usernameField: 'email' }, (email, password, done) =>
     }
 
     if (!user) {
-      return done(null, false, 'Invalid Credentials');
+      return done(null, false, { message: 'Invalid Credentials.' });
     }
 
     user.comparePassword(password, (err, isMatch) => {
@@ -44,7 +43,7 @@ passport.use(new Strategy({ usernameField: 'email' }, (email, password, done) =>
         return done(null, user);
       }
 
-      return done(null, false, 'Invalid credentials.');
+      return done(null, false, { message: 'Invalid credentials.' });
     });
   });
 }));
@@ -95,7 +94,8 @@ export async function signup(params: SignUpType) {
 // function returns a function, as its indended to be used as a middleware with
 // Express.  We have another compatibility layer here to make it work nicely with
 // GraphQL, as GraphQL always expects to see a promise for handling async code.
-export function login({ email, password, req }) {
+export function login(params: SignUpType) {
+  const { email, password, req } = params;
   return new Promise((resolve, reject) => {
     const passportLocalAuthenticate = passport.authenticate('local', (err, user) => {
       if (!user) {
