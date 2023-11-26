@@ -49,6 +49,13 @@ passport.use(new Strategy({ usernameField: 'email' }, (email, password, done) =>
   });
 }));
 
+
+type SignUpType = {
+  email: string;
+  password: string;
+  req: any;
+};
+
 // Creates a new user account.  We first check to see if a user already exists
 // with this email address to avoid making multiple accounts with identical addresses
 // If it does not, we save the existing user.  After the user is created, it is
@@ -56,7 +63,8 @@ passport.use(new Strategy({ usernameField: 'email' }, (email, password, done) =>
 // Notice the Promise created in the second 'then' statement.  This is done
 // because Passport only supports callbacks, while GraphQL only supports promises
 // for async code!  Awkward!
-export async function signup({ email, password, req }) {
+export async function signup(params: SignUpType) {
+  const { email, password, req } = params;
   const user = new UserModel({ email, password });
 
   if (!email || !password) {

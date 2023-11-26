@@ -4,7 +4,7 @@ import Mutation from './Mutation';
 
 export const schema = new GraphQLSchema({
   query: RootQuery,
-  // mutation: Mutation,
+  mutation: Mutation,
 });
 
 export default schema;
