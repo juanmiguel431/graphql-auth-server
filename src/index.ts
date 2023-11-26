@@ -1,10 +1,13 @@
 import 'dotenv/config';
 import './mongoose/connect';
 import express from "express";
+import session from 'express-session';
 import cors from 'cors';
 import { createHandler } from 'graphql-http/lib/use/express';
 import schema from './graphql/schema';
 import passport from 'passport';
+import MongoStore from 'connect-mongo';
+import { mongoUrl } from './mongoose/connect';
 
 const app = express();
 app.use(cors({
@@ -13,6 +16,22 @@ app.use(cors({
   allowedHeaders: 'Content-Type,Authorization',
 }));
 app.use(express.json());
+
+// Configures express to use sessions.  This places an encrypted identifier
+// on the users cookie.  When a user makes a request, this middleware examines
+// the cookie and modifies the request object to indicate which user made the request
+// The cookie itself only contains the id of a session; more data about the session
+// is stored inside of MongoDB.
+app.use(
+  session({
+    resave: true,
+    saveUninitialized: true,
+    secret: 'aaabbbccc',
+    store: MongoStore.create({
+      mongoUrl: mongoUrl,
+    })
+  })
+);
 
 // Passport is wired into express as a middleware. When a request comes in,
 // Passport will examine the request's session (as set by the above config) and
