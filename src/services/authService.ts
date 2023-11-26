@@ -91,7 +91,7 @@ export async function signup(params: SignUpType) {
 
 // Logs in a user.  This will invoke the 'local-strategy' defined above in this
 // file. Notice the strange method signature here: the 'passport.authenticate'
-// function returns a function, as its indended to be used as a middleware with
+// function returns a function, as it's intended to be used as a middleware with
 // Express.  We have another compatibility layer here to make it work nicely with
 // GraphQL, as GraphQL always expects to see a promise for handling async code.
 export function login(params: SignUpType) {
