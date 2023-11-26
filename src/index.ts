@@ -39,7 +39,11 @@ app.use(
 app.use(passport.initialize());
 app.use(passport.session());
 
-app.all('/graphql', createHandler({ schema }));
+// app.all('/graphql', createHandler({ schema }));
+app.all('/graphql', (req, res, next) => {
+  const handler = createHandler({ schema, context: req as any });
+  return handler(req, res, next);
+});
 
 app.get('/', (req, res) => {
   res.send('Hello World.');
