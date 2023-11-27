@@ -1,6 +1,7 @@
-import passport from 'passport';
+import passport, { use } from 'passport';
 import { Strategy } from 'passport-local';
 import UserModel from '../mongoose/models/UserModel';
+import { User } from '../models';
 
 // SerializeUser is used to provide some identifying token that can be saved
 // in the users session.  We traditionally use the 'ID' for this.
@@ -10,10 +11,13 @@ passport.serializeUser((user, done) => {
 
 // The counterpart of 'serializeUser'.  Given only a user's ID, we must return
 // the user object.  This object is placed on 'req.user'.
-passport.deserializeUser((id, done) => {
-  UserModel.findById(id, (err, user) => {
-    done(err, user);
-  });
+passport.deserializeUser(async (id, done) => {
+  try {
+    const user = await UserModel.findById(id);
+    done(null, user);
+  } catch (e) {
+    done(e);
+  }
 });
 
 // Instructs Passport how to authenticate a user using a locally saved email
@@ -24,7 +28,7 @@ passport.deserializeUser((id, done) => {
 // the password might not match the saved one.  In either case, we call the 'done'
 // callback, including a string that messages why the authentication process failed.
 // This string is provided back to the GraphQL client.
-passport.use(new Strategy({ usernameField: 'email' }, (email, password, done) => {
+passport.use(new Strategy({ usernameField: 'email', passwordField: 'password' }, (email, password, done) => {
   UserModel.findOne({ email: email.toLowerCase() }, (err, user) => {
     if (err) {
       return done(err);
@@ -106,5 +110,19 @@ export function login(params: SignUpType) {
     });
 
     passportLocalAuthenticate({ body: { email, password } });
+  });
+}
+
+export async function logout(req): Promise<User> {
+  const { user } = req;
+
+  return new Promise((resolve, reject) => {
+    try {
+      req.logout(() => {
+        resolve(user);
+      });
+    } catch (e) {
+      reject(e);
+    }
   });
 }
