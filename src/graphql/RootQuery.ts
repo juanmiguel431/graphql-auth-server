@@ -1,12 +1,13 @@
 import { GraphQLID, GraphQLList, GraphQLNonNull, GraphQLObjectType, GraphQLString } from 'graphql';
+import UserType from './types/UserType';
 
 const RootQuery = new GraphQLObjectType({
   name: 'RootQuery',
   fields: () => ({
-    hello: {
-      type: GraphQLString,
+    user: {
+      type: UserType,
       resolve: (source, args, context, info) => {
-        return 'JMPC Root Query';
+        return context.user;
       }
     }
   })
