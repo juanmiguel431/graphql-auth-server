@@ -1,10 +1,10 @@
-import passport, { use } from 'passport';
+import passport from 'passport';
 import { Strategy } from 'passport-local';
 import UserModel from '../mongoose/models/UserModel';
 import { User } from '../models';
 
 // SerializeUser is used to provide some identifying token that can be saved
-// in the users session.  We traditionally use the 'ID' for this.
+// in the user's session.  We traditionally use the 'ID' for this.
 passport.serializeUser((user, done) => {
   done(null, user.id);
 });
@@ -28,28 +28,19 @@ passport.deserializeUser(async (id, done) => {
 // the password might not match the saved one.  In either case, we call the 'done'
 // callback, including a string that messages why the authentication process failed.
 // This string is provided back to the GraphQL client.
-passport.use(new Strategy({ usernameField: 'email', passwordField: 'password' }, (email, password, done) => {
-  UserModel.findOne({ email: email.toLowerCase() }, (err, user) => {
-    if (err) {
-      return done(err);
-    }
+passport.use(new Strategy({ usernameField: 'email', passwordField: 'password' }, async (email, password, done) => {
+  try {
+    const user = await UserModel.findOne({ email: email.toLowerCase() });
 
     if (!user) {
-      return done(null, false, { message: 'Invalid Credentials.' });
+      return done('Invalid Credentials.');
     }
 
-    user.comparePassword(password, (err, isMatch) => {
-      if (err) {
-        return done(err);
-      }
-
-      if (isMatch) {
-        return done(null, user);
-      }
-
-      return done(null, false, { message: 'Invalid credentials.' });
-    });
-  });
+    await user.comparePassword(password);
+    return done(null, user);
+  } catch (err) {
+    return done('Invalid Credentials.');
+  }
 }));
 
 
@@ -62,7 +53,7 @@ type SignUpType = {
 // Creates a new user account.  We first check to see if a user already exists
 // with this email address to avoid making multiple accounts with identical addresses
 // If it does not, we save the existing user.  After the user is created, it is
-// provided to the 'req.logIn' function.  This is apart of Passport JS.
+// provided to the 'req.logIn' function. This is apart of Passport JS.
 // Notice the Promise created in the second 'then' statement.  This is done
 // because Passport only supports callbacks, while GraphQL only supports promises
 // for async code!  Awkward!
@@ -103,7 +94,7 @@ export function login(params: SignUpType) {
   return new Promise((resolve, reject) => {
     const passportLocalAuthenticate = passport.authenticate('local', (err, user) => {
       if (!user) {
-        reject('Invalid credentials.');
+        reject(err);
       }
 
       req.login(user, () => resolve(user));
