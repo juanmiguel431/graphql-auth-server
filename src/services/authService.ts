@@ -95,6 +95,7 @@ export function login(params: SignUpType) {
     const passportLocalAuthenticate = passport.authenticate('local', (err, user) => {
       if (!user) {
         reject(err);
+        return;
       }
 
       req.login(user, () => resolve(user));

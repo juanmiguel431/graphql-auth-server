@@ -1,6 +1,6 @@
-import { GraphQLID, GraphQLObjectType, GraphQLString, GraphQLNonNull } from 'graphql';
+import { GraphQLNonNull, GraphQLObjectType, GraphQLString, GraphQLError } from 'graphql';
 import UserType from './types/UserType';
-import { signup, logout, login } from '../services/authService';
+import { login, logout, signup } from '../services/authService';
 
 const Mutation = new GraphQLObjectType({
   name: 'Mutation',
@@ -28,9 +28,14 @@ const Mutation = new GraphQLObjectType({
         email: { type: new GraphQLNonNull(GraphQLString) },
         password: { type: new GraphQLNonNull(GraphQLString) },
       },
-      resolve: (source, args, context, info) => {
+      resolve: async (source, args, context, info) => {
         const { email, password } = args;
-        return login({ email, password, req: context });
+
+        try {
+          return await login({ email, password, req: context });
+        } catch (e: any) {
+          return new GraphQLError(e);
+        }
       }
     },
   }
