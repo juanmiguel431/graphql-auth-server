@@ -31,7 +31,6 @@ passport.deserializeUser(async (id, done) => {
 passport.use(new Strategy({ usernameField: 'email', passwordField: 'password' }, async (email, password, done) => {
   try {
     const user = await UserModel.findOne({ email: email.toLowerCase() });
-
     if (!user) {
       return done('Invalid Credentials.');
     }
@@ -92,10 +91,13 @@ export async function signup(params: SignUpType) {
 export function login(params: SignUpType) {
   const { email, password, req } = params;
   return new Promise((resolve, reject) => {
+    if (!email || !password) {
+      return reject('You must provide an email and password.');
+    }
+
     const passportLocalAuthenticate = passport.authenticate('local', (err, user) => {
       if (!user) {
-        reject(err);
-        return;
+        return reject(err || 'Invalid Credentials.') ;
       }
 
       req.login(user, () => resolve(user));
