@@ -14,6 +14,7 @@ app.use(cors({
   origin: process.env.REACT_CLIENT,
   methods: 'GET,HEAD,PUT,PATCH,POST,DELETE',
   allowedHeaders: 'Content-Type,Authorization',
+  credentials: true
 }));
 app.use(express.json());
 
